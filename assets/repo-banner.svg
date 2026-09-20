@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Kaggle AI Agent Security Silver Medal Solution</title>
+  <desc id="desc">A dark blue agent security graph with a silver medal and competition result.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071a2b"/>
+      <stop offset="0.52" stop-color="#12395a"/>
+      <stop offset="1" stop-color="#101828"/>
+    </linearGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="0.45" stop-color="#cbd5e1"/>
+      <stop offset="1" stop-color="#64748b"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="1200" height="360" rx="28" fill="url(#bg)"/>
+  <g opacity="0.23" stroke="#38bdf8" stroke-width="2">
+    <path d="M40 70L195 125L330 55L465 145L600 80L755 160L910 70L1160 125"/>
+    <path d="M70 285L230 230L360 300L520 220L690 290L855 230L1010 300L1165 245"/>
+    <path d="M195 125L230 230M330 55L360 300M465 145L520 220M600 80L690 290M755 160L855 230M910 70L1010 300"/>
+  </g>
+  <g fill="#38bdf8" filter="url(#glow)">
+    <circle cx="195" cy="125" r="6"/><circle cx="330" cy="55" r="5"/><circle cx="465" cy="145" r="7"/>
+    <circle cx="600" cy="80" r="5"/><circle cx="755" cy="160" r="7"/><circle cx="910" cy="70" r="5"/>
+    <circle cx="230" cy="230" r="5"/><circle cx="520" cy="220" r="6"/><circle cx="855" cy="230" r="6"/>
+  </g>
+  <g transform="translate(92 83)">
+    <path d="M42 0L72 78H48L28 28L8 78H-16L14 0Z" fill="#38bdf8" opacity="0.9"/>
+    <circle cx="28" cy="100" r="54" fill="url(#silver)" stroke="#f8fafc" stroke-width="4"/>
+    <circle cx="28" cy="100" r="38" fill="#0f2740" stroke="#94a3b8" stroke-width="2"/>
+    <text x="28" y="112" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="36" font-weight="700" fill="#e2e8f0">2</text>
+  </g>
+  <text x="250" y="116" font-family="Segoe UI,Arial,sans-serif" font-size="22" letter-spacing="4" fill="#7dd3fc">KAGGLE SILVER MEDAL</text>
+  <text x="250" y="176" font-family="Segoe UI,Arial,sans-serif" font-size="43" font-weight="700" fill="#f8fafc">AI Agent Security</text>
+  <text x="250" y="222" font-family="Segoe UI,Arial,sans-serif" font-size="25" fill="#cbd5e1">Multi-Step Tool Attacks · Reproducible Solution</text>
+  <g transform="translate(250 258)">
+    <rect width="235" height="48" rx="24" fill="#38bdf8" opacity="0.14" stroke="#38bdf8"/>
+    <text x="118" y="31" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="19" font-weight="600" fill="#bae6fd">184 / 4,186 TEAMS</text>
+    <rect x="253" width="210" height="48" rx="24" fill="#cbd5e1" opacity="0.12" stroke="#cbd5e1"/>
+    <text x="358" y="31" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="19" font-weight="600" fill="#e2e8f0">PRIVATE 16.275</text>
+  </g>
+</svg>

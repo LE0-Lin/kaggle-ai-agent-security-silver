@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+*.egg-info/
+build/
+dist/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+kaggle.json
+*.pem
+*.key
+
+# Competition data and generated artifacts
+data/
+input/
+outputs/
+submissions/
+submission.csv
+*.parquet
+*.pkl
+*.pt
+*.pth
+
+# Local acquisition scratch files (not part of the release)
+source_versions/
+kernel-metadata.json
+open-pnf-p4-model-fallback-20260823.ipynb
+notebooks/kaggle_submission_generated.ipynb
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
