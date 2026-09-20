@@ -6,6 +6,7 @@
   <a href="https://www.kaggle.com/competitions/ai-agent-security-multi-step-tool-attacks"><img src="https://img.shields.io/badge/Kaggle-Silver%20Medal-C0C0C0?logo=kaggle&logoColor=white" alt="Kaggle Silver Medal"></a>
   <img src="https://img.shields.io/badge/Rank-184%20%2F%204%2C186-6f42c1" alt="Rank 184 of 4,186">
   <img src="https://img.shields.io/badge/Private%20Score-16.275-0b7285" alt="Private score 16.275">
+  <a href="https://www.kaggle.com/certification/competitions/leolin05/ai-agent-security-multi-step-tool-attacks"><img src="https://img.shields.io/badge/Kaggle-Official%20Certificate-20BEFF?logo=kaggle&logoColor=white" alt="Official Kaggle Certificate"></a>
   <a href="https://github.com/LE0-Lin/kaggle-ai-agent-security-silver/actions/workflows/ci.yml"><img src="https://github.com/LE0-Lin/kaggle-ai-agent-security-silver/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License"></a>
 </p>
@@ -29,8 +30,11 @@
 | Public score | 16.215 |
 | Private score | **16.275** |
 | Kaggle submission ID | `55905450` |
+| Official verification | **[View Kaggle Certificate](https://www.kaggle.com/certification/competitions/leolin05/ai-agent-security-multi-step-tool-attacks)** |
 
 The competition evaluated attack-search algorithms in a deterministic offline sandbox. Submissions searched for replayable multi-step failures in tool-using agents, and the evaluator independently replayed every returned candidate against public and private guardrails.
+
+Kaggle's official certificate verifies that **Zhibo Lin placed 184th of 4,186 teams and received a Competition Silver Medal**, awarded on September 2, 2026.
 
 ## Why this approach
 

@@ -8,7 +8,9 @@
 
 > **一句话概括：**这不是单纯寻找一个“厉害 Prompt”，而是设计一个与评测指标对齐、能够根据运行时反馈自适应选择策略、并通过全新环境复放验证的 Agent 红队搜索算法。
 
-📖 **推荐从这里开始：**[完整中文方案解读、代码导读与面试讲法](docs/solution-walkthrough.zh-CN.md)
+🏅 **[查看 Kaggle 官方银牌证书](https://www.kaggle.com/certification/competitions/leolin05/ai-agent-security-multi-step-tool-attacks)**
+
+📖 **[完整中文方案解读、代码导读与面试讲法](docs/solution-walkthrough.zh-CN.md)**
 
 ## 成绩
 
@@ -20,8 +22,11 @@
 | Public Score | 16.215 |
 | Private Score | **16.275** |
 | Submission ID | `55905450` |
+| 官方证明 | **[Kaggle Competition Silver Medal Certificate](https://www.kaggle.com/certification/competitions/leolin05/ai-agent-security-multi-step-tool-attacks)** |
 
 比赛由 OpenAI、Google 和 IEEE 主办，目标是在确定性的离线沙箱中寻找可复现的多步 Agent 工具调用安全失败。评测器会重新执行候选轨迹，而不是相信参赛者自行上报的结果。
+
+Kaggle 官方证书确认：**Zhibo Lin 在 4,186 支队伍中排名第 184，获得 Competition Silver Medal**，颁发日期为 2026 年 9 月 2 日。
 
 ## 为什么这样设计
 

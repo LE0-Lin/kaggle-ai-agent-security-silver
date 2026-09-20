@@ -6,6 +6,8 @@
 
 核心不是让模型输出看起来危险的文字，而是在有限预算内最大化**可复现的安全谓词触发、候选多样性和运行效率**。最终方案取得 Private Score 16.275，在 4,186 支队伍中排名第 184，获得 Kaggle 银牌。
 
+**官方证明：**[Kaggle Competition Silver Medal Certificate](https://www.kaggle.com/certification/competitions/leolin05/ai-agent-security-multi-step-tool-attacks)
+
 ## 1. 这是一个什么问题？
 
 普通的 Prompt 安全测试往往只看一轮文字输出，但真实 Agent 会读取邮件、网页或文件，保存中间信息，规划下一步，然后调用具备真实权限的工具。危险行为可能在多步链路的最后才出现。

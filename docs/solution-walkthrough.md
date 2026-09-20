@@ -6,6 +6,8 @@ This project is a lightweight, replay-aware, metric-aligned red-teaming search a
 
 The objective is not to produce text that looks adversarial. It is to maximize reproducible security-predicate violations, candidate diversity, and throughput under a fixed evaluation budget. The solution earned a private score of 16.275 and placed 184th of 4,186 teams for a Kaggle silver medal.
 
+**Official verification:** [Kaggle Competition Silver Medal Certificate](https://www.kaggle.com/certification/competitions/leolin05/ai-agent-security-multi-step-tool-attacks)
+
 ## 1. Problem framing
 
 The benchmark evaluates multi-step security failures in agents that can call tools. A submission interacts with a sandboxed agent and returns candidate conversations. The evaluator then replays each candidate in a fresh, tamper-resistant environment and scores only successful tool calls that satisfy security predicates.

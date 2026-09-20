@@ -7,6 +7,8 @@
 | Competition | AI Agent Security: Multi-Step Tool Attacks |
 | Kaggle account | `leolin05` |
 | Team result | 184 / 4,186, silver medal |
+| Official certificate | [Kaggle verification page](https://www.kaggle.com/certification/competitions/leolin05/ai-agent-security-multi-step-tool-attacks) |
+| Certificate award date | 2026-09-02 |
 | Notebook | Open PNF P4 Model Fallback 20260823 |
 | Evaluated version | 18 of 21 |
 | Script version ID | `346173627` |
