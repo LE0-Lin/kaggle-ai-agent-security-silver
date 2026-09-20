@@ -15,7 +15,9 @@
   <strong>OpenAI · Google · IEEE — AI Agent Security: Multi-Step Tool Attacks</strong>.
 </p>
 
-<p align="center"><a href="README.zh-CN.md">中文说明</a> · <a href="docs/methodology.md">Methodology</a> · <a href="docs/reproducibility.md">Reproducibility</a></p>
+<p align="center"><a href="README.zh-CN.md">中文说明</a> · <a href="docs/solution-walkthrough.md"><strong>Solution Walkthrough</strong></a> · <a href="docs/solution-walkthrough.zh-CN.md">中文深度解读</a> · <a href="docs/reproducibility.md">Reproducibility</a></p>
+
+> **Core idea:** this is not a prompt-writing trick. It is a metric-aligned, runtime-adaptive search algorithm that probes the sandbox, measures actual tool behavior from traces, selects the most productive replayable strategy, and expands it into a diverse candidate set.
 
 ## Result
 
@@ -29,6 +31,19 @@
 | Kaggle submission ID | `55905450` |
 
 The competition evaluated attack-search algorithms in a deterministic offline sandbox. Submissions searched for replayable multi-step failures in tool-using agents, and the evaluator independently replayed every returned candidate against public and private guardrails.
+
+## Why this approach
+
+The challenge was not to make a model produce suspicious text. A finding counted only when the hidden evaluator could **replay the candidate and observe a successful unsafe tool call**. That shifted the optimization target from prompt appearance to reproducibility, diversity, and throughput.
+
+| Benchmark constraint | Design response |
+|---|---|
+| Fresh-environment replay | Learn from exported tool traces, not model prose |
+| Hidden private guardrail | Prefer compact, stable candidates over brittle chains |
+| Fixed runtime budget | Score probe yield per second |
+| Two target model families | Use a model-aware tool-hop budget |
+| Diversity bonus | Vary safe, non-deliverable recipient identities |
+| Tool side effects | Restrict every example to `example.invalid` |
 
 ## What the solution does
 
@@ -55,6 +70,8 @@ The key engineering choices are deliberately simple:
 
 The defensive lesson is more important than the prompt text: **tool authorization must be bound to explicit user intent**, not inferred from plausible-looking content. See [the methodology note](docs/methodology.md) for the full threat model and limitations.
 
+For a line-by-line explanation, metric derivation, design trade-offs, limitations, and interview-ready project summary, read the **[full solution walkthrough](docs/solution-walkthrough.md)**.
+
 ## Repository layout
 
 ```text
@@ -65,7 +82,7 @@ The defensive lesson is more important than the prompt text: **tool authorizatio
 ├── scripts/
 │   └── build_notebook.py             # Rebuild a Kaggle-ready notebook
 ├── tests/                             # Offline contract and behavior tests
-├── docs/                              # Method, evidence, and reproduction notes
+├── docs/                              # Walkthrough, method, evidence, and reproduction notes
 └── assets/repo-banner.svg             # Repository artwork
 ```
 
