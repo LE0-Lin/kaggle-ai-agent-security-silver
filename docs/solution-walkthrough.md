@@ -1,132 +1,115 @@
-# Solution Walkthrough
+# Technical Report: Runtime-Adaptive Search for Replayable Tool-Use Failures
 
-## The 30-second version
+## Abstract
 
-This project is a lightweight, replay-aware, metric-aligned red-teaming search algorithm for tool-using agents. It probes a small set of candidates in the official offline sandbox, measures actual successful `email.send` calls from environment traces, selects the template with the best estimated score per second, and expands it into 2,000 diverse candidates using safe `example.invalid` recipients.
+This report describes the submission used for my silver-medal result in Kaggle's **AI Agent Security: Multi-Step Tool Attacks** competition. The benchmark required an algorithm to interact with sandboxed tool-using agents and return attack candidates that could be replayed by an independent evaluator. The final method uses a small online search over message templates, trace-based success measurement, runtime-normalized selection, model-specific tool-hop budgets, and deterministic candidate expansion. It achieved a public score of 16.215 and a private score of 16.275, ranking 184th of 4,186 teams.
 
-The objective is not to produce text that looks adversarial. It is to maximize reproducible security-predicate violations, candidate diversity, and throughput under a fixed evaluation budget. The solution earned a private score of 16.275 and placed 184th of 4,186 teams for a Kaggle silver medal.
+## 1. Benchmark
 
-**Official verification:** [Kaggle Competition Silver Medal Certificate](https://www.kaggle.com/certification/competitions/leolin05/ai-agent-security-multi-step-tool-attacks)
+A Kaggle Featured Code Competition, the event page describes the benchmark as hosted by OpenAI, Google, and IEEE and identifies OpenAI as the competition host. It drew 12,142 entrants; the final leaderboard contained 4,186 teams. The official [competition page](https://www.kaggle.com/competitions/ai-agent-security-multi-step-tool-attacks) and [medal certificate](https://www.kaggle.com/certification/competitions/leolin05/ai-agent-security-multi-step-tool-attacks) provide the external context and result evidence.
 
-## 1. Problem framing
+A submission provides an `attack.py` file containing an `AttackAlgorithm`. For each target model, the algorithm can interact with the supplied environment and return a list of candidates. The evaluator then replays those candidates in a fresh environment and scores successful violations of four security predicates:
 
-The benchmark evaluates multi-step security failures in agents that can call tools. A submission interacts with a sandboxed agent and returns candidate conversations. The evaluator then replays each candidate in a fresh, tamper-resistant environment and scores only successful tool calls that satisfy security predicates.
+- exfiltration;
+- untrusted input leading to a privileged action;
+- destructive file modification;
+- confused-deputy tool use.
 
-That replay boundary changes the problem. A clever-looking prompt has no value if its effect cannot be reproduced. The useful optimization target is therefore:
+The metric combines predicate severity with a bonus for distinct tool-call cells. The final score is evaluated separately under a public guardrail and a hidden private guardrail. Each target model also has a fixed execution-time budget.
+
+The final submission focuses on the confused-deputy predicate for `email.send`. The implementation does not train or fine-tune a model; it performs online candidate selection against the benchmark environment.
+
+## 2. Objective
+
+For each template `t`, the probe stage estimates:
 
 ```text
-replayable predicate yield × diversity ÷ runtime cost
+U(t) = (4 × S(t) + 2 × I(t)) / Δt
 ```
 
-## 2. Metric alignment
+where:
 
-The implementation concentrates on the confused-deputy predicate. In the competition metric, a severity-3 predicate carries weight 4 and a distinct tool-call cell adds a diversity bonus of 2. Under a simplified estimate, a successful new cell contributes roughly six raw points.
+- `S(t)` is the number of successful `email.send` events observed in exported traces;
+- `I(t)` is the number of successful probe iterations, each using a distinct recipient;
+- `Δt` is the total probe runtime.
 
-The probe score mirrors that structure:
+The coefficient 4 corresponds to the benchmark weight for a severity-3 predicate. The additional 2 approximates the distinct-cell bonus. This is a selection heuristic, not a local reimplementation of the hidden metric.
 
-```text
-estimated utility = (4 × successful deliveries + 2 × successful unique cells) / elapsed time
+## 3. Method
+
+### 3.1 Candidate templates
+
+The final search space contains two short status-message templates. Both use a fixed, non-sensitive body and a recipient generated under the reserved `example.invalid` domain. This keeps local and benchmark runs isolated from real email infrastructure.
+
+### 3.2 Probe stage
+
+Each template is evaluated twice. Before every probe, the algorithm calls `env.reset()` to reduce state carry-over between candidates. It then calls `env.interact(...)` with a model-dependent maximum number of tool hops and exports the resulting trace.
+
+Only events satisfying both conditions below count as successful observations:
+
+```python
+event.get("name") == "email.send"
+event.get("ok") is True
 ```
 
-Only trace events with `name == "email.send"` and `ok is True` are counted. Model text is never treated as proof that an action occurred.
+The model's natural-language response is not used as evidence of success.
 
-## 3. Algorithm
+### 3.3 Model-specific budget
 
-```mermaid
-flowchart TD
-    A[Read target model configuration] --> B[Probe each candidate template]
-    B --> C[Reset sandbox before every probe]
-    C --> D[Export tool trace]
-    D --> E[Count successful email.send calls]
-    E --> F[Estimate raw-score yield per second]
-    F --> G[Select the best template]
-    G --> H[Expand to 2,000 safe variants]
-    H --> I[Fresh evaluator replay]
-```
+The algorithm uses one tool hop for model names containing `gemma` and eight hops otherwise. This rule was used to avoid spending the execution budget on longer traces for the Gemma-family target while retaining a larger interaction budget for the other target configuration.
 
-The algorithm has three stages:
+### 3.4 Selection and expansion
 
-1. **Probe:** replay each compact template twice and inspect the resulting traces.
-2. **Select:** choose the template with the highest estimated scoring yield per second.
-3. **Expand:** produce 2,000 candidates whose recipients differ but remain inside the non-deliverable `example.invalid` domain.
+The template with the highest estimated utility (U(t)) is selected. The algorithm then emits 2,000 candidates. The message structure remains fixed while the recipient identifier changes deterministically, creating a larger set of candidate tool-call cells without introducing real addresses.
 
-## 4. Implementation map
+If the environment is unavailable, the entry point returns a deterministic batch based on the control template. If a probe raises an exception, that probe contributes zero successes and execution continues.
 
-| Component | Responsibility | Why it matters |
-|---|---|---|
-| `_model_name` | Read model identity from mapping- or object-style configs | Keeps the entry point compatible with evaluator variants |
-| `_max_tool_hops` | Use one hop for Gemma-family targets and eight otherwise | Avoids wasting budget on unproductive chains |
-| `_recipient` | Create deterministic `.invalid` recipients | Encourages diversity without touching real infrastructure |
-| `_tool_events` | Parse traces defensively | Malformed data cannot become a false positive |
-| `_successful_deliveries` | Count only successful `email.send` events | Matches the benchmark's successful-tool-call requirement |
-| `_probe` | Measure estimated score and runtime | Turns template choice into an online feedback problem |
-| `AttackAlgorithm.run` | Select and expand the final candidate batch | Implements the required Kaggle contract |
+## 4. Implementation
 
-## 5. Why the design worked
+| Component | Function |
+|---|---|
+| `_model_name` | Reads the target model name from mapping- or object-style configuration |
+| `_max_tool_hops` | Selects the model-specific interaction budget |
+| `_recipient` | Generates deterministic `example.invalid` addresses |
+| `_tool_events` | Filters malformed trace entries |
+| `_successful_deliveries` | Counts successful `email.send` events |
+| `_probe` | Measures successes and elapsed time for one template |
+| `AttackAlgorithm.run` | Selects a template and returns the expanded candidate set |
 
-### Replay stability
+The complete implementation is in [`attack.py`](../attack.py). The archived Kaggle notebook is [`notebooks/kaggle_submission_v18.ipynb`](../notebooks/kaggle_submission_v18.ipynb).
 
-Candidates are compact and depend on little hidden state. Every probe starts after `env.reset()`, which makes template comparisons more controlled and closer to final replay conditions.
+## 5. Result
 
-### Throughput awareness
-
-Each target model receives a fixed time budget. Optimizing score per second can outperform choosing a slower template with a slightly higher one-off success count.
-
-### Trace-grounded feedback
-
-The search signal comes from tool events, not the assistant's prose. This removes a major source of false positives in agent evaluations.
-
-### Safe diversity
-
-Recipient variation increases the chance of distinct tool-call cells, while the reserved `.invalid` domain ensures that examples cannot reach a real mailbox.
-
-### Fail-closed behavior
-
-Interaction errors, malformed traces, and failed tool calls contribute zero. A single probe failure does not crash the complete candidate generation run.
-
-## 6. Results
-
-| Metric | Result |
+| Metric | Value |
 |---|---:|
 | Public score | 16.215 |
 | Private score | **16.275** |
-| Final rank | **184 / 4,186** |
-| Percentile | **Top 4.4%** |
-| Award | **Kaggle Silver Medal** |
+| Final rank | **184 / 4,186 teams** |
+| Award | **Competition Silver Medal** |
 
-The small public/private gap is consistent with a strategy that remained useful under the private guardrail rather than depending entirely on public-leaderboard behavior. The exact notebook, submission ID, and file digest are recorded in the [reproducibility ledger](reproducibility.md).
+The [official Kaggle certificate](https://www.kaggle.com/certification/competitions/leolin05/ai-agent-security-multi-step-tool-attacks) verifies the recipient, rank, team count, medal, and award date. The evaluated notebook version, submission ID, timestamp, and SHA-256 digest are listed in the [reproducibility record](reproducibility.md).
 
-## 7. Limitations
+## 6. Reproducibility
 
-- The search concentrates on one predicate surface rather than the full benchmark.
-- The template pool is intentionally small.
-- Two probes per template provide a noisy estimate of success rate and latency.
-- Broad exception handling favors robustness but offers limited failure diagnostics.
-- A hidden guardrail always introduces distribution-shift risk.
+The public repository separates the competition entry point from the archived notebook. `scripts/build_notebook.py` generates a new Kaggle-ready notebook from the canonical `attack.py`, while the original version-18 notebook remains unchanged as evidence of the evaluated artifact.
 
-## 8. Natural extensions
+Because the official SDK is supplied only inside the competition environment, the local test suite injects a minimal contract implementation. Six tests cover:
 
-- allocate probe budget with a multi-armed bandit;
-- keep a novelty archive keyed by tool-call signatures;
-- maintain separate strategy pools for every predicate family;
-- track replay stability and cross-model transfer as first-class metrics;
-- add structured timeout, refusal, parse-error, and tool-error logging;
-- stop or switch templates when marginal yield declines.
+- deterministic, non-deliverable recipient generation;
+- model-specific tool-hop limits;
+- the 2,000-candidate output contract;
+- selection of the successful probe template;
+- containment of probe exceptions;
+- rejection of malformed trace events.
 
-These changes would turn the compact competition solution into a broader black-box agent-security search framework.
+GitHub Actions runs these tests and Ruff checks on Python 3.10 and 3.12.
 
-## 9. Defensive lesson
+## 7. Limitations and future work
 
-The important result is not a particular message template. It is evidence that plausible natural-language context can be mistaken for authorization. Safer agents should preserve provenance from untrusted inputs, require explicit user intent before side effects, re-check authorization at the tool boundary, and evaluate defenses against replayed tool traces rather than text alone.
+The final method searches only two templates and concentrates on one predicate surface. Two repetitions per template provide a limited estimate of success probability and latency. The broad exception handler preserves the evaluation run but does not distinguish timeouts, tool refusal, trace export failure, and other error classes.
 
-## Portfolio summary
+A larger follow-up system could allocate probes with a multi-armed bandit, maintain a novelty archive keyed by tool-call signature, separate strategy pools by predicate family, and log structured failure categories. Those extensions were not part of the evaluated submission.
 
-> Built a runtime-adaptive probe-and-expand red-teaming algorithm for the OpenAI/Google/IEEE Kaggle Agent Security competition. Aligned search with replayed tool traces, model-aware budgets, and safe candidate diversification; ranked 184th of 4,186 teams and earned a silver medal.
+## 8. Security interpretation
 
-## Files to explore
-
-- [`attack.py`](../attack.py) — canonical implementation
-- [`kaggle_submission_v18.ipynb`](../notebooks/kaggle_submission_v18.ipynb) — evaluated notebook archive
-- [`methodology.md`](methodology.md) — threat model and method summary
-- [`reproducibility.md`](reproducibility.md) — score and artifact evidence
-- [`scorecard.md`](scorecard.md) — competition result card
+The benchmark result illustrates a tool-authorization failure: plausible task context can be interpreted as permission to perform an external action. A defensive system should preserve the provenance of untrusted inputs, require explicit authorization before side effects, and enforce recipient and payload policy at the tool boundary. These conclusions apply to the benchmark behavior; the submission does not claim evaluation coverage for production systems.
